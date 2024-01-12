@@ -1,33 +1,25 @@
-import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:rest_api/model/comment_model.dart';
-import 'package:rest_api/model/post_model.dart';
 import 'package:rest_api/utils/url/app_url.dart';
-import 'package:http/http.dart' as http;
+import '../services/network_api_service.dart';
 
 class CommentController extends GetxController {
   RxList commentList = [].obs;
 
   RxBool isLoading = false.obs;
 
+  NetworkApiService networkApiService = NetworkApiService();
 
 
   Future<void> fetchCommentList() async {
     print("object") ;
-    try {
-      isLoading.value = true;
-      final url = Uri.parse(AppUrl.comments);
-      var response = await http.get(url);
-      isLoading.value = false;
+    networkApiService.getApi(AppUrl.comments).then((value) {
+      for (var item in value) {
+        commentList.add(CommentModel.fromJson(item));
+      }
 
-      if (response.statusCode == 200) {
-        var jsonData = jsonDecode(response.body);
-        print(jsonData.toString()) ;
-        for (var item in jsonData) {
-          commentList.add(CommentModel.fromJson(item));
-        }
-      } else {}
-    } catch (e) {}
+      print(commentList.length) ;
+    });
   }
 }
